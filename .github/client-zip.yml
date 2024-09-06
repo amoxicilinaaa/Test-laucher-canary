@@ -1,0 +1,42 @@
+name: Create ZIP and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Aciona o workflow para tags no formato v1.0.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '14'  # Altere conforme necessário
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build project
+      run: npm run build  # Altere conforme necessário
+
+    - name: Create ZIP archive
+      run: |
+        zip -r release.zip . -x "*.git*" -x "release.zip"
+      
+    - name: Upload ZIP as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: release
+        path: release.zip
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: release.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
